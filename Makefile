@@ -102,3 +102,16 @@ integration-in-docker:
 		-e GOOGLE_APPLICATION_CREDENTIALS=$(GOOGLE_APPLICATION_CREDENTIALS) \
 		gcr.io/$(GCP_PROJECT)/skaffold-integration
 
+
+.PHONY: proto-docker-image
+proto-docker-image:
+	docker build \
+		-f deploy/skaffold/Dockerfile.build \
+		-t gcr.io/$(GCP_PROJECT)/skaffold-build .
+
+gen-proto: proto-docker-image
+	docker run \
+		-v $(PWD):/go/src/$(REPOPATH) \
+		-w /go/src/$(REPOPATH)/pkg/skaffold/types \
+		gcr.io/$(GCP_PROJECT)/skaffold-build \
+		/bin/protoc --go_out=. config.proto
